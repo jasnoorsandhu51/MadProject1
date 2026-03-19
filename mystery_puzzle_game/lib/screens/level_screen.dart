@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class LevelScreen extends StatelessWidget {
+class LevelScreen extends StatefulWidget {
   final int level;
   final String targetObject;
 
@@ -11,10 +11,18 @@ class LevelScreen extends StatelessWidget {
   });
 
   @override
+  State<LevelScreen> createState() => _LevelScreenState();
+}
+
+//Timer that counts down from 60 seconds
+class _LevelScreenState extends State<LevelScreen> {
+  int timeLeft = 60;
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Level $level")),
-      body: const Center(child: Text("Level Screen")),
+      appBar: AppBar(title: Text("Level ${widget.level}")),
+      body: Center(child: Text("Time Left: $timeLeft")),
     );
   }
 }
