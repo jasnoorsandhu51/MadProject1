@@ -15,7 +15,7 @@ class LevelScreen extends StatefulWidget {
   State<LevelScreen> createState() => _LevelScreenState(); // 👈 REQUIRED
 }
 
-//Timer that counts fown from 60 seconds
+//Timer that counts down from 60 seconds
 class _LevelScreenState extends State<LevelScreen> {
   int timeLeft = 60;
   Timer? timer;
