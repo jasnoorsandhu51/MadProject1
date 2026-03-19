@@ -7,7 +7,9 @@ class TimeUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Time Up")),
-      body: const Center(child: Text("Time is up!")),
+      body: const Center(
+        child: Text("Time is up!", style: TextStyle(fontSize: 28)),
+      ),
     );
   }
 }

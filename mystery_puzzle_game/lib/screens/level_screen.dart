@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'time_up_screen.dart';
+
 class LevelScreen extends StatefulWidget {
   final int level;
   final String targetObject;
@@ -12,10 +14,9 @@ class LevelScreen extends StatefulWidget {
   });
 
   @override
-  State<LevelScreen> createState() => _LevelScreenState(); // 👈 REQUIRED
+  State<LevelScreen> createState() => _LevelScreenState();
 }
 
-//Timer that counts down from 60 seconds
 class _LevelScreenState extends State<LevelScreen> {
   int timeLeft = 60;
   Timer? timer;
@@ -24,20 +25,39 @@ class _LevelScreenState extends State<LevelScreen> {
   void initState() {
     super.initState();
 
+    startTimer();
+  }
+
+  void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (timeLeft > 0) {
+      if (timeLeft == 0) {
+        timer.cancel();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const TimeUpScreen()),
+        );
+      } else {
+        setState(() {
           timeLeft--;
-        }
-      });
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Level ${widget.level}")),
-      body: Center(child: Text("Time Left: $timeLeft")),
+      body: Center(
+        child: Text("Time: $timeLeft", style: const TextStyle(fontSize: 28)),
+      ),
     );
   }
 }
