@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class LevelScreen extends StatefulWidget {
   final int level;
@@ -11,12 +12,26 @@ class LevelScreen extends StatefulWidget {
   });
 
   @override
-  State<LevelScreen> createState() => _LevelScreenState();
+  State<LevelScreen> createState() => _LevelScreenState(); // 👈 REQUIRED
 }
 
-//Timer that counts down from 60 seconds
+//Timer that counts fown from 60 seconds
 class _LevelScreenState extends State<LevelScreen> {
   int timeLeft = 60;
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (timeLeft > 0) {
+          timeLeft--;
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
