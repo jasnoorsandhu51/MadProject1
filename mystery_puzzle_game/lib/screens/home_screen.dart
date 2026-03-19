@@ -7,10 +7,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mystery Detective")),
+      appBar: AppBar(title: const Text("Mystery Detective Puzzle Game")),
       body: Center(
         child: ElevatedButton(
-          child: const Text("Start Investigation"),
+          child: const Text("Start Your Investigation"),
           onPressed: () {
             Navigator.push(
               context,
