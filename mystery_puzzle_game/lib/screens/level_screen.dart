@@ -17,6 +17,7 @@ class LevelScreen extends StatefulWidget {
   State<LevelScreen> createState() => _LevelScreenState();
 }
 
+// Timer that counts down from 60 seconds
 class _LevelScreenState extends State<LevelScreen> {
   int timeLeft = 60;
   Timer? timer;
@@ -24,7 +25,6 @@ class _LevelScreenState extends State<LevelScreen> {
   @override
   void initState() {
     super.initState();
-
     startTimer();
   }
 
@@ -45,6 +45,17 @@ class _LevelScreenState extends State<LevelScreen> {
     });
   }
 
+  // If its the wrong answer
+  void wrongAnswer() {
+    setState(() {
+      timeLeft -= 10;
+
+      if (timeLeft < 0) {
+        timeLeft = 0;
+      }
+    });
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -55,8 +66,18 @@ class _LevelScreenState extends State<LevelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Level ${widget.level}")),
-      body: Center(
-        child: Text("Time: $timeLeft", style: const TextStyle(fontSize: 28)),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("Time: $timeLeft", style: const TextStyle(fontSize: 28)),
+
+          const SizedBox(height: 30),
+
+          ElevatedButton(
+            onPressed: wrongAnswer,
+            child: const Text("Wrong Object"),
+          ),
+        ],
       ),
     );
   }
