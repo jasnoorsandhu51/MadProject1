@@ -11,7 +11,7 @@ class MysteryGame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mystery Detective',
+      title: 'Mystery Detective Puzzle Game',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.indigo),
       home: const HomeScreen(),
