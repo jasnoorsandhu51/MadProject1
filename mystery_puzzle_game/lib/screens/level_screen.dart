@@ -26,7 +26,45 @@ class _LevelScreenState extends State<LevelScreen> {
   @override
   void initState() {
     super.initState();
-    startTimer();
+    showLevelIntro();
+  }
+
+  // The mission before the level starts
+  void showLevelIntro() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      String instruction;
+
+      if (widget.level == 1) {
+        // I am going to add more of a plot
+        instruction = "Welcome! Find the key evidence.";
+      } else if (widget.level == 2) {
+        // User needs to find the wallet
+        instruction = "Find the object the criminal left behind.";
+      } else {
+        // User needs to find the Notebook
+        instruction = "Find the object the criminal left behind.";
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Level ${widget.level}"),
+            content: Text(instruction),
+            actions: [
+              TextButton(
+                child: const Text("Start"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  startTimer();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   void startTimer() {
