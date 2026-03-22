@@ -23,6 +23,8 @@ class _LevelScreenState extends State<LevelScreen> {
   int timeLeft = 60;
   Timer? timer;
 
+  int wrongClicks = 0; // tracks all the wrong attempts
+
   @override
   void initState() {
     super.initState();
@@ -89,7 +91,18 @@ class _LevelScreenState extends State<LevelScreen> {
     setState(() {
       timeLeft -= 10;
       if (timeLeft < 0) timeLeft = 0;
+
+      wrongClicks++;
     });
+
+    // Gives user a hint after they get it wrong three times
+    if (wrongClicks == 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Hint: Focus on what the criminal left behind."),
+        ),
+      );
+    }
   }
 
   // If its the correct answer
@@ -130,12 +143,10 @@ class _LevelScreenState extends State<LevelScreen> {
           Text("Time: $timeLeft", style: const TextStyle(fontSize: 24)),
 
           const SizedBox(height: 10),
-
           // The Crime Scene
           Expanded(
             child: Stack(
               children: [
-                // The background picture
                 Positioned.fill(
                   child: Image.asset(
                     'assets/images/crime_scene.png',
