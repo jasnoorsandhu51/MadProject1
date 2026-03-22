@@ -104,6 +104,15 @@ class _LevelScreenState extends State<LevelScreen> {
     );
   }
 
+  // Checking the object
+  void checkObject(String object) {
+    if (object == widget.targetObject) {
+      correctAnswer();
+    } else {
+      wrongAnswer();
+    }
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -115,24 +124,66 @@ class _LevelScreenState extends State<LevelScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("Level ${widget.level}")),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("Time: $timeLeft", style: const TextStyle(fontSize: 28)),
+          const SizedBox(height: 10),
 
-          const SizedBox(height: 30),
-
-          // Button for the wrong object
-          ElevatedButton(
-            onPressed: wrongAnswer,
-            child: const Text("Wrong Object"),
-          ),
+          Text("Time: $timeLeft", style: const TextStyle(fontSize: 24)),
 
           const SizedBox(height: 10),
 
-          // Button for the correct object
-          ElevatedButton(
-            onPressed: correctAnswer,
-            child: const Text("Correct Object"),
+          // The Crime Scene
+          Expanded(
+            child: Stack(
+              children: [
+                // The background picture
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/crime_scene.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+                // The key, level 1 answer
+                Positioned(
+                  left: 80,
+                  top: 200,
+                  child: GestureDetector(
+                    onTap: () => checkObject("Key"),
+                    child: Image.asset('assets/images/key.png', width: 60),
+                  ),
+                ),
+
+                // The phone
+                Positioned(
+                  left: 200,
+                  top: 300,
+                  child: GestureDetector(
+                    onTap: () => checkObject("Phone"),
+                    child: Image.asset('assets/images/phone.png', width: 60),
+                  ),
+                ),
+
+                // The wallet, answer for level 2
+                Positioned(
+                  left: 150,
+                  top: 400,
+                  child: GestureDetector(
+                    onTap: () => checkObject("Wallet"),
+                    child: Image.asset('assets/images/wallet.png', width: 60),
+                  ),
+                ),
+
+                // The notebook, answer for level 3
+                Positioned(
+                  left: 250,
+                  top: 150,
+                  child: GestureDetector(
+                    onTap: () => checkObject("Notebook"),
+                    child: Image.asset('assets/images/notebook.png', width: 60),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
