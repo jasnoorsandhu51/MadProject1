@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'time_up_screen.dart';
+import 'level_complete_screen.dart';
 
 class LevelScreen extends StatefulWidget {
   final int level;
@@ -49,11 +50,20 @@ class _LevelScreenState extends State<LevelScreen> {
   void wrongAnswer() {
     setState(() {
       timeLeft -= 10;
-
-      if (timeLeft < 0) {
-        timeLeft = 0;
-      }
+      if (timeLeft < 0) timeLeft = 0;
     });
+  }
+
+  // If its the correct answer
+  void correctAnswer() {
+    timer?.cancel();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LevelCompleteScreen(level: widget.level),
+      ),
+    );
   }
 
   @override
@@ -73,9 +83,18 @@ class _LevelScreenState extends State<LevelScreen> {
 
           const SizedBox(height: 30),
 
+          // Button for the wrong object
           ElevatedButton(
             onPressed: wrongAnswer,
             child: const Text("Wrong Object"),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Button for the correct object
+          ElevatedButton(
+            onPressed: correctAnswer,
+            child: const Text("Correct Object"),
           ),
         ],
       ),
