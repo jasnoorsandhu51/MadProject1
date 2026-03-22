@@ -41,7 +41,7 @@ class _LevelScreenState extends State<LevelScreen> {
         instruction = "Welcome! Find the key evidence.";
       } else if (widget.level == 2) {
         // User needs to find the wallet
-        instruction = "Find the object the criminal left behind.";
+        instruction = "Find the object the criminal left behind..";
       } else {
         // User needs to find the Notebook
         instruction = "Find the object the criminal left behind.";
@@ -91,10 +91,8 @@ class _LevelScreenState extends State<LevelScreen> {
     setState(() {
       timeLeft -= 10;
       if (timeLeft < 0) timeLeft = 0;
-
       wrongClicks++;
     });
-
     // Gives user a hint after they get it wrong three times
     if (wrongClicks == 3) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -135,65 +133,82 @@ class _LevelScreenState extends State<LevelScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Level ${widget.level}")),
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(title: Text("Level ${widget.level}"), centerTitle: true),
       body: Column(
         children: [
           const SizedBox(height: 10),
 
-          Text("Time: $timeLeft", style: const TextStyle(fontSize: 24)),
+          Text(
+            "Time: $timeLeft",
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
 
           const SizedBox(height: 10),
           // The Crime Scene
           Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/crime_scene.png',
-                    fit: BoxFit.contain,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/crime_scene.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),
 
-                // The key, level 1 answer
-                Positioned(
-                  left: 80,
-                  top: 200,
-                  child: GestureDetector(
-                    onTap: () => checkObject("Key"),
-                    child: Image.asset('assets/images/key.png', width: 60),
+                  // The key, level 1 answer
+                  Positioned(
+                    left: 80,
+                    top: 200,
+                    child: GestureDetector(
+                      onTap: () => checkObject("Key"),
+                      child: Image.asset('assets/images/key.png', width: 60),
+                    ),
                   ),
-                ),
 
-                // The phone
-                Positioned(
-                  left: 200,
-                  top: 300,
-                  child: GestureDetector(
-                    onTap: () => checkObject("Phone"),
-                    child: Image.asset('assets/images/phone.png', width: 60),
+                  // The phone
+                  Positioned(
+                    left: 200,
+                    top: 300,
+                    child: GestureDetector(
+                      onTap: () => checkObject("Phone"),
+                      child: Image.asset('assets/images/phone.png', width: 60),
+                    ),
                   ),
-                ),
 
-                // The wallet, answer for level 2
-                Positioned(
-                  left: 150,
-                  top: 400,
-                  child: GestureDetector(
-                    onTap: () => checkObject("Wallet"),
-                    child: Image.asset('assets/images/wallet.png', width: 60),
+                  // The wallet, answer for level 2
+                  Positioned(
+                    left: 150,
+                    top: 400,
+                    child: GestureDetector(
+                      onTap: () => checkObject("Wallet"),
+                      child: Image.asset('assets/images/wallet.png', width: 60),
+                    ),
                   ),
-                ),
 
-                // The notebook, answer for level 3
-                Positioned(
-                  left: 250,
-                  top: 150,
-                  child: GestureDetector(
-                    onTap: () => checkObject("Notebook"),
-                    child: Image.asset('assets/images/notebook.png', width: 60),
+                  // The notebook, answer for level 3
+                  Positioned(
+                    left: 250,
+                    top: 150,
+                    child: GestureDetector(
+                      onTap: () => checkObject("Notebook"),
+                      child: Image.asset(
+                        'assets/images/notebook.png',
+                        width: 60,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
