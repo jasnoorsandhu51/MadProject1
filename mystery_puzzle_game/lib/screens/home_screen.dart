@@ -12,10 +12,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // NEW: store results from database
+  //stores results from database
   List<Map<String, dynamic>> results = [];
 
-  // NEW: store player name
+  //stores players name
   String playerName = "";
 
   @override
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 20),
 
                 ElevatedButton(
-                  child: const Text("Start Investigation"),
+                  child: const Text("Start Your Investigation"),
                   onPressed: () {
                     Navigator.push(
                       context,
