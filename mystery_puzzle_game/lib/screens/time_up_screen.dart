@@ -7,8 +7,22 @@ class TimeUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Time Up")),
-      body: const Center(
-        child: Text("Time is up!", style: TextStyle(fontSize: 28)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Time is up!", style: TextStyle(fontSize: 28)),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              child: const Text("Back to Home"),
+              onPressed: () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

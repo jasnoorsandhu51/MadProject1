@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'time_up_screen.dart';
+import '../models/level.dart';
 import 'level_complete_screen.dart';
+import 'time_up_screen.dart';
 
 class LevelScreen extends StatefulWidget {
-  final int level;
-  final String targetObject;
+  final Level level;
 
-  const LevelScreen({
-    super.key,
-    required this.level,
-    required this.targetObject,
-  });
+  const LevelScreen({super.key, required this.level});
 
   @override
   State<LevelScreen> createState() => _LevelScreenState();
@@ -24,59 +19,54 @@ class _LevelScreenState extends State<LevelScreen> {
   Timer? timer;
 
   int wrongClicks = 0; // tracks all the wrong attempts
+  int hintsUsed = 0; // tracks all the hints used
 
   @override
   void initState() {
     super.initState();
-    showLevelIntro();
+    _showIntro();
   }
 
   // The mission before the level starts
-  void showLevelIntro() {
+  void _showIntro() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       String instruction;
 
-      if (widget.level == 1) {
-        // I am going to add more of a plot
-        instruction = "Welcome! Find the key evidence.";
-      } else if (widget.level == 2) {
-        // User needs to find the wallet
-        instruction = "Find the object the criminal left behind..";
+      if (widget.level.levelNumber == 1) {
+        instruction = "Level 1: Find the key evidence in this case.";
+      } else if (widget.level.levelNumber == 2) {
+        instruction = "Level 2: Find a personal item belonging to the culprit.";
       } else {
-        // User needs to find the Notebook
-        instruction = "Find the object the criminal left behind.";
+        instruction = "Level 3: Find the final clue left behind.";
       }
 
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Level ${widget.level}"),
-            content: Text(instruction),
-            actions: [
-              TextButton(
-                child: const Text("Start"),
-                onPressed: () {
-                  Navigator.pop(context);
-                  startTimer();
-                },
-              ),
-            ],
-          );
-        },
+        builder: (_) => AlertDialog(
+          title: Text("Level ${widget.level.levelNumber}"),
+          content: Text(instruction),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _startTimer();
+              },
+              child: const Text("Start"),
+            ),
+          ],
+        ),
       );
     });
   }
 
-  void startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (timeLeft == 0) {
-        timer.cancel();
-
+  void _startTimer() {
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (timeLeft <= 0) {
+        t.cancel();
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const TimeUpScreen()),
+          MaterialPageRoute(builder: (_) => const TimeUpScreen()),
         );
       } else {
         setState(() {
@@ -87,7 +77,7 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   // If its the wrong answer
-  void wrongAnswer() {
+  void _wrongAnswer() {
     setState(() {
       timeLeft -= 10;
       if (timeLeft < 0) timeLeft = 0;
@@ -95,32 +85,45 @@ class _LevelScreenState extends State<LevelScreen> {
     });
     // Gives user a hint after they get it wrong three times
     if (wrongClicks == 3) {
+      hintsUsed++;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Hint: Focus on what the criminal left behind."),
+        SnackBar(
+          content: Text(
+            widget.level.levelNumber == 1
+                ? "Hint: Look for something that unlocks something."
+                : widget.level.levelNumber == 2
+                ? "Hint: Think personal belongings."
+                : "Hint: The final clue helps solve the case.",
+          ),
         ),
       );
     }
   }
 
   // If its the correct answer
-  void correctAnswer() {
+  void _correctAnswer() {
     timer?.cancel();
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => LevelCompleteScreen(level: widget.level),
+        builder: (_) => LevelCompleteScreen(
+          level: widget.level.levelNumber,
+          timeLeft: timeLeft,
+          wrongClicks: wrongClicks,
+          hintsUsed: hintsUsed,
+        ),
       ),
     );
   }
 
   // Checking the object
-  void checkObject(String object) {
-    if (object == widget.targetObject) {
-      correctAnswer();
+  void _checkObject(String object) {
+    if (object == widget.level.targetObject) {
+      _correctAnswer();
     } else {
-      wrongAnswer();
+      _wrongAnswer();
     }
   }
 
@@ -133,8 +136,7 @@ class _LevelScreenState extends State<LevelScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(title: Text("Level ${widget.level}"), centerTitle: true),
+      appBar: AppBar(title: Text("Level ${widget.level.levelNumber}")),
       body: Column(
         children: [
           const SizedBox(height: 10),
@@ -164,43 +166,39 @@ class _LevelScreenState extends State<LevelScreen> {
                       ),
                     ),
                   ),
-
                   // The key, level 1 answer
                   Positioned(
                     left: 80,
                     top: 200,
                     child: GestureDetector(
-                      onTap: () => checkObject("Key"),
+                      onTap: () => _checkObject("Key"),
                       child: Image.asset('assets/images/key.png', width: 60),
                     ),
                   ),
-
                   // The phone
                   Positioned(
                     left: 200,
                     top: 300,
                     child: GestureDetector(
-                      onTap: () => checkObject("Phone"),
+                      onTap: () => _checkObject("Phone"),
                       child: Image.asset('assets/images/phone.png', width: 60),
                     ),
                   ),
-
                   // The wallet, answer for level 2
                   Positioned(
                     left: 150,
                     top: 400,
                     child: GestureDetector(
-                      onTap: () => checkObject("Wallet"),
+                      onTap: () => _checkObject("Wallet"),
                       child: Image.asset('assets/images/wallet.png', width: 60),
                     ),
                   ),
-
                   // The notebook, answer for level 3
                   Positioned(
                     left: 250,
                     top: 150,
                     child: GestureDetector(
-                      onTap: () => checkObject("Notebook"),
+                      onTap: () => _checkObject("Notebook"),
                       child: Image.asset(
                         'assets/images/notebook.png',
                         width: 60,

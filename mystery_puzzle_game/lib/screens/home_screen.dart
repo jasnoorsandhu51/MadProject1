@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/level.dart';
 import 'level_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,7 +13,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
     // The popup story
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
@@ -49,12 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(20),
-
               child: Column(
                 children: [
                   const SizedBox(height: 30),
@@ -77,12 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   const SizedBox(height: 20),
-
                   // The detective
                   Image.asset('assets/images/detective.png', height: 140),
 
                   const SizedBox(height: 20),
-
                   // The story
                   Card(
                     elevation: 6,
@@ -119,8 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const LevelScreen(level: 1, targetObject: "Key"),
+                          builder: (context) => LevelScreen(
+                            level: Level(levelNumber: 1, targetObject: "Key"),
+                          ),
                         ),
                       );
                     },
