@@ -3,6 +3,7 @@ import 'dart:async';
 import '../models/level.dart';
 import 'level_complete_screen.dart';
 import 'time_up_screen.dart';
+import '../database/database_helper.dart';
 
 class LevelScreen extends StatefulWidget {
   final Level level;
@@ -33,10 +34,13 @@ class _LevelScreenState extends State<LevelScreen> {
       String instruction;
 
       if (widget.level.levelNumber == 1) {
+        // user needs to find the key
         instruction = "Level 1: Find the key evidence in this case.";
       } else if (widget.level.levelNumber == 2) {
+        // user needs to find the wallet
         instruction = "Level 2: Find a personal item belonging to the culprit.";
       } else {
+        // user needs to find the notebook
         instruction = "Level 3: Find the final clue left behind.";
       }
 
@@ -91,10 +95,10 @@ class _LevelScreenState extends State<LevelScreen> {
         SnackBar(
           content: Text(
             widget.level.levelNumber == 1
-                ? "Hint: Look for something that unlocks something."
+                ? "Hint: Look for something that the culprit would use to unlock something."
                 : widget.level.levelNumber == 2
-                ? "Hint: Think personal belongings."
-                : "Hint: The final clue helps solve the case.",
+                ? "Hint: A personal belonging that stores money."
+                : "Hint: Something the user writes in.",
           ),
         ),
       );
@@ -102,8 +106,16 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   // If its the correct answer
-  void _correctAnswer() {
+  void _correctAnswer() async {
     timer?.cancel();
+
+    //  saves the data to sqlite
+    await DatabaseHelper.instance.insertResult({
+      'level': widget.level.levelNumber,
+      'timeLeft': timeLeft,
+      'wrongClicks': wrongClicks,
+      'hintsUsed': hintsUsed,
+    });
 
     Navigator.pushReplacement(
       context,
@@ -151,6 +163,13 @@ class _LevelScreenState extends State<LevelScreen> {
           ),
 
           const SizedBox(height: 10),
+
+          // Shows the wrong attempts and hints used while playing
+          Text("Wrong Attempts: $wrongClicks"),
+          Text("Hints Used: $hintsUsed"),
+
+          const SizedBox(height: 10),
+
           // The Crime Scene
           Expanded(
             child: Padding(
@@ -166,6 +185,7 @@ class _LevelScreenState extends State<LevelScreen> {
                       ),
                     ),
                   ),
+
                   // The key, level 1 answer
                   Positioned(
                     left: 80,
@@ -175,6 +195,7 @@ class _LevelScreenState extends State<LevelScreen> {
                       child: Image.asset('assets/images/key.png', width: 60),
                     ),
                   ),
+
                   // The phone
                   Positioned(
                     left: 200,
@@ -184,6 +205,7 @@ class _LevelScreenState extends State<LevelScreen> {
                       child: Image.asset('assets/images/phone.png', width: 60),
                     ),
                   ),
+
                   // The wallet, answer for level 2
                   Positioned(
                     left: 150,
@@ -193,6 +215,7 @@ class _LevelScreenState extends State<LevelScreen> {
                       child: Image.asset('assets/images/wallet.png', width: 60),
                     ),
                   ),
+
                   // The notebook, answer for level 3
                   Positioned(
                     left: 250,

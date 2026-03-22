@@ -20,18 +20,12 @@ class LevelCompleteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Level is Complete")),
+      appBar: AppBar(title: const Text("Level Complete")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Level $level Complete!",
-              style: const TextStyle(fontSize: 28),
-            ),
-
-            const SizedBox(height: 10),
-
+            Text("Level $level Complete!"),
             Text("Time Left: $timeLeft"),
             Text("Wrong Clicks: $wrongClicks"),
             Text("Hints Used: $hintsUsed"),
@@ -39,13 +33,12 @@ class LevelCompleteScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             ElevatedButton(
-              child: const Text("Next Level"),
               onPressed: () {
                 if (level == 1) {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => LevelScreen(
+                      builder: (_) => LevelScreen(
                         level: Level(levelNumber: 2, targetObject: "Wallet"),
                       ),
                     ),
@@ -54,7 +47,7 @@ class LevelCompleteScreen extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => LevelScreen(
+                      builder: (_) => LevelScreen(
                         level: Level(levelNumber: 3, targetObject: "Notebook"),
                       ),
                     ),
@@ -63,11 +56,12 @@ class LevelCompleteScreen extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const GameCompleteScreen(),
+                      builder: (_) => const GameCompleteScreen(),
                     ),
                   );
                 }
               },
+              child: const Text("Next"),
             ),
           ],
         ),
