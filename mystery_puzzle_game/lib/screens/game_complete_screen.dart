@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
 import '../models/game_state.dart';
 import 'home_screen.dart';
 
@@ -50,7 +51,14 @@ class ParticlePainter extends CustomPainter {
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 class GameCompleteScreen extends StatefulWidget {
-  const GameCompleteScreen({super.key});
+  final int timeRemaining;
+  final int wrongClicks;
+
+  const GameCompleteScreen({
+    super.key,
+    this.timeRemaining = 0,
+    this.wrongClicks = 0,
+  });
 
   @override
   State<GameCompleteScreen> createState() => _GameCompleteScreenState();
@@ -59,6 +67,10 @@ class GameCompleteScreen extends StatefulWidget {
 class _GameCompleteScreenState extends State<GameCompleteScreen> {
   late final List<_Particle> _particles;
   Timer? _ticker;
+  bool _nameEntered = false;
+  int _refreshKey = 0;
+  late int _score;
+  String _playerName = 'Player';
 
   static const _colors = [
     Colors.amber,
@@ -124,6 +136,9 @@ class _GameCompleteScreenState extends State<GameCompleteScreen> {
       );
     });
 
+    _score = RunRecord.calculateScore(widget.timeRemaining, widget.wrongClicks);
+    _initAndShowDialog();
+
     final startTime = DateTime.now();
     _ticker = Timer.periodic(const Duration(milliseconds: 16), (_) {
       final elapsed = DateTime.now().difference(startTime).inMilliseconds;
@@ -143,6 +158,76 @@ class _GameCompleteScreenState extends State<GameCompleteScreen> {
   void dispose() {
     _ticker?.cancel();
     super.dispose();
+  }
+
+  Future<void> _initAndShowDialog() async {
+    _playerName = await PreferencesService.getPlayerName();
+    if (mounted && !_nameEntered) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showNameDialog());
+    }
+  }
+
+  void _showNameDialog() {
+    final controller = TextEditingController(text: _playerName);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1025),
+        title: const Text(
+          'Enter your name',
+          style: TextStyle(color: Colors.amber, fontWeight: FontWeight.w700),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'Player',
+            hintStyle: TextStyle(color: Colors.white38),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.amber),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.amber),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final name = controller.text.trim().isEmpty
+                  ? 'Player'
+                  : controller.text.trim();
+              Navigator.pop(ctx);
+              await PreferencesService.savePlayerName(name);
+              await DatabaseHelper.instance.saveRun(
+                RunRecord(
+                  playerName: name,
+                  score: _score,
+                  timeRemaining: widget.timeRemaining,
+                  wrongClicks: widget.wrongClicks,
+                ),
+              );
+              if (mounted) {
+                setState(() {
+                  _nameEntered = true;
+                  _refreshKey++;
+                  _playerName = name;
+                });
+              }
+            },
+            child: const Text(
+              'SAVE',
+              style: TextStyle(
+                color: Colors.amber,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -171,12 +256,12 @@ class _GameCompleteScreenState extends State<GameCompleteScreen> {
 
           // Content
           SafeArea(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 1. Top badge
+                  // Top badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
@@ -200,152 +285,401 @@ class _GameCompleteScreenState extends State<GameCompleteScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // 3. Stacy polaroid photo
-                  Transform.rotate(
-                    angle: -0.03,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 30),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 180,
-                            height: 200,
-                            child: Image.asset(
-                              'assets/images/maid.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          // Stamp effect — stroke layer
-                          Transform.rotate(
-                            angle: 0.35,
-                            child: Text(
-                              'GUILTY',
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 4,
-                                foreground: Paint()
-                                  ..style = PaintingStyle.stroke
-                                  ..strokeWidth = 3
-                                  ..color = const Color(
-                                    0xFFCC0000,
-                                  ).withValues(alpha: 0.88),
-                              ),
-                            ),
-                          ),
-                          // Stamp effect — fill layer
-                          Transform.rotate(
-                            angle: 0.35,
-                            child: const Text(
-                              'GUILTY',
-                              style: TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 4,
-                                color: Color(0xE0CC0000),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 5. Suspect name
-                  const Text(
-                    'STACY',
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 4,
-                    ),
-                  ),
-
-                  // 6. Title
-                  const Text(
-                    'Exhibition House Maid',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 13,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-
                   const SizedBox(height: 20),
 
-                  // 8. Divider
-                  Container(width: 60, height: 1.5, color: Colors.amber),
+                  // Middle: two-column row
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // LEFT COLUMN — polaroid + evidence
+                        Expanded(
+                          flex: 1,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                // Stacy polaroid photo
+                                Transform.rotate(
+                                  angle: -0.03,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      10,
+                                      10,
+                                      10,
+                                      30,
+                                    ),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 180,
+                                          height: 200,
+                                          child: Image.asset(
+                                            'assets/images/maid.png',
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        // Stamp effect — stroke layer
+                                        Transform.rotate(
+                                          angle: 0.35,
+                                          child: Text(
+                                            'GUILTY',
+                                            style: TextStyle(
+                                              fontSize: 48,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 4,
+                                              foreground: Paint()
+                                                ..style = PaintingStyle.stroke
+                                                ..strokeWidth = 3
+                                                ..color = const Color(
+                                                  0xFFCC0000,
+                                                ).withValues(alpha: 0.88),
+                                            ),
+                                          ),
+                                        ),
+                                        // Stamp effect — fill layer
+                                        Transform.rotate(
+                                          angle: 0.35,
+                                          child: const Text(
+                                            'GUILTY',
+                                            style: TextStyle(
+                                              fontSize: 48,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 4,
+                                              color: Color(0xE0CC0000),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
 
-                  const SizedBox(height: 20),
+                                const SizedBox(height: 8),
 
-                  // 10. Evidence list
-                  ..._evidence.map(
-                    (e) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: Colors.greenAccent,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            e,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
+                                // Suspect name
+                                const Text(
+                                  'STACY',
+                                  style: TextStyle(
+                                    color: Colors.amber,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 4,
+                                  ),
+                                ),
+
+                                // Subtitle
+                                const Text(
+                                  'Exhibition House Maid',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 13,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Amber divider
+                                Container(
+                                  width: 60,
+                                  height: 1.5,
+                                  color: Colors.amber,
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Evidence list
+                                ..._evidence.map(
+                                  (e) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.greenAccent,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          e,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // 12. Close the case button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: const Color(0xFF0A0A0F),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+
+                        const SizedBox(width: 24),
+
+                        // RIGHT COLUMN — stats panel
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.bar_chart,
+                                      color: Colors.amber,
+                                      size: 14,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'THIS RUN',
+                                      style: TextStyle(
+                                        color: Colors.amber,
+                                        fontSize: 10,
+                                        letterSpacing: 2.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                const Divider(color: Colors.white12),
+                                const SizedBox(height: 16),
+
+                                // Big score
+                                const Text(
+                                  'SCORE',
+                                  style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 10,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$_score pts',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Two stat chips
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _StatChip(
+                                        label: 'TIME LEFT',
+                                        value: '${widget.timeRemaining}s',
+                                        icon: Icons.timer_outlined,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _StatChip(
+                                        label: 'PENALTIES',
+                                        value: '${widget.wrongClicks}',
+                                        icon: Icons.close,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
+                                const Divider(color: Colors.white12),
+                                const SizedBox(height: 16),
+
+                                // Leaderboard header
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.emoji_events_outlined,
+                                      color: Colors.amber,
+                                      size: 14,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'LEADERBOARD',
+                                      style: TextStyle(
+                                        color: Colors.amber,
+                                        fontSize: 10,
+                                        letterSpacing: 2.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Leaderboard list
+                                FutureBuilder<List<RunRecord>>(
+                                  key: ValueKey(_refreshKey),
+                                  future: DatabaseHelper.instance.getAllRuns(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData ||
+                                        snapshot.data!.isEmpty) {
+                                      return const Text(
+                                        'No previous runs.',
+                                        style: TextStyle(
+                                          color: Colors.white38,
+                                          fontSize: 12,
+                                        ),
+                                      );
+                                    }
+                                    final runs = snapshot.data!
+                                        .take(5)
+                                        .toList();
+                                    return Column(
+                                      children: List.generate(runs.length, (i) {
+                                        final run = runs[i];
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 6,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                '${i + 1}',
+                                                style: const TextStyle(
+                                                  color: Colors.amber,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  run.playerName,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                '${run.score} pts',
+                                                style: const TextStyle(
+                                                  color: Colors.amber,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                    );
+                                  },
+                                ),
+
+                                const Spacer(),
+
+                                // CLOSE THE CASE button
+                                GestureDetector(
+                                  onTap: () {
+                                    GameState.instance.reset();
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFFB8860B),
+                                          Color(0xFFFFD700),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'CLOSE THE CASE',
+                                        style: TextStyle(
+                                          color: Color(0xFF1A1000),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // PLAY AGAIN button
+                                GestureDetector(
+                                  onTap: () {
+                                    GameState.instance.reset();
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.amber,
+                                        width: 1.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'PLAY AGAIN',
+                                        style: TextStyle(
+                                          color: Colors.amber,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        GameState.instance.reset();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                          (route) => false,
-                        );
-                      },
-                      child: const Text('CLOSE THE CASE'),
+                      ],
                     ),
                   ),
 
@@ -366,4 +700,53 @@ class _GameCompleteScreenState extends State<GameCompleteScreen> {
     "William's Wallet — used as decoy",
     "Stacy's Diary — full plan in writing",
   ];
+}
+
+// ─── Stat chip ────────────────────────────────────────────────────────────────
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.amber, size: 16),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white38,
+              fontSize: 9,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

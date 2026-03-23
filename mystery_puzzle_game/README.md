@@ -1,154 +1,93 @@
 # Mystery Detective Puzzle Game
 
-A Flutter-based mystery detective puzzle game where players solve crimes by finding evidence under time pressure.
-
-## Game Overview
-
-This is an interactive detective-themed puzzle game where players have 60 seconds per level to identify and collect the correct evidence object. The game features a multi-level progression system with increasing difficulty and a hint mechanism to aid players who struggle.
+A Flutter-based mystery detective puzzle game where players solve crimes by finding evidence under time pressure. Identify the culprit across three levels, then see your name on the leaderboard.
 
 ## Features
 
-- **3 Progressive Levels**: Each level requires finding a different evidence object
-- **Countdown Timer**: 60 seconds per level to complete the puzzle
-- **Penalty System**: Wrong selections deduct 10 seconds from the timer
-- **Hint System**: After 3 wrong attempts, a helpful hint is displayed
-- **Score Tracking**: Tracks wrong attempts for feedback
-- **Story-Driven**: Immersive detective narrative with dialogue and instructions
-- **Cross-Platform**: Runs on Android, iOS, Web, macOS, Linux, and Windows
+- **3 Progressive Levels** — find the correct evidence object in each scene within 60 seconds
+- **Countdown Timer** — 60 seconds per level; wrong selections deduct 10 seconds
+- **Penalty System** — incorrect taps penalise time and reduce your final score
+- **Score Calculation** — `timeRemaining × 10 − wrongClicks × 50`
+- **Story-Driven Narrative** — immersive dialogue scenes between levels
+- **Game Complete Screen** — two-column layout with the convict profile on the left and a stats + leaderboard panel on the right
+- **Leaderboard** — top 5 runs persisted locally via `shared_preferences`; player name collected once per run via a name-entry dialog
+- **Cross-Platform** — Android, iOS, Web, macOS, Linux, Windows
 
 ## Prerequisites
 
-- **Flutter SDK**: Version 3.10.8 or higher
-- **Dart SDK**: Included with Flutter
-- **Mobile Emulator/Device**: Android emulator, iOS simulator, or physical device (optional for web/desktop)
-- **Assets**: Game requires image assets in `assets/images/` directory
+| Requirement | Version |
+|---|---|
+| Flutter SDK | ≥ 3.10.8 |
+| Dart SDK | included with Flutter |
+
+A device or emulator is optional — the game runs in a web browser or as a desktop app without one.
 
 ## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point
-├── models/
-│   └── level.dart             # Level data model
+├── main.dart
 ├── database/
-│   └── database_helper.dart    # Database utilities (currently empty)
-└── screens/
-    ├── home_screen.dart        # Home/intro screen with story
-    ├── level_screen.dart       # Main gameplay screen with timer
-    ├── level_complete_screen.dart  # Level completion screen
-    ├── game_complete_screen.dart   # Game end screen
-    └── time_up_screen.dart     # Timeout screen
+│   └── database_helper.dart   # RunRecord model, DatabaseHelper, PreferencesService
+├── models/
+│   ├── dialogue.dart
+│   ├── game_state.dart
+│   ├── level.dart
+│   ├── level_config.dart
+│   └── dialogue.dart
+├── screens/
+│   ├── home_screen.dart
+│   ├── intro_background_screen.dart
+│   ├── level_screen.dart
+│   ├── dialogue_screen.dart
+│   ├── level_complete_screen.dart
+│   ├── game_complete_screen.dart  ← two-column layout, leaderboard
+│   └── time_up_screen.dart
+└── widgets/
+    ├── clue_progress_bar.dart
+    └── dialogue_overlay.dart
 
 assets/
-└── images/                      # Game images and assets
+└── images/    # maid.png and scene assets
 ```
 
 ## Getting Started
 
-### 1. Install Dependencies
-
 ```bash
+# 1. Install dependencies
 cd mystery_puzzle_game
 flutter pub get
-```
 
-### 2. Run the Game
-
-**On default platform:**
-```bash
+# 2. Run (picks the best available device automatically)
 flutter run
+
+# Or target a specific platform:
+flutter run -d chrome    # Web
+flutter run -d macos     # macOS desktop
+flutter run -d ios       # iOS Simulator (macOS only)
+flutter run -d android   # Android emulator / device
+flutter run -d windows   # Windows desktop
+flutter run -d linux     # Linux desktop
 ```
 
-**On specific platform:**
-```bash
-# iOS Simulator (macOS only)
-flutter run -d ios
+See [USER_GUIDE.md](USER_GUIDE.md) for a full walkthrough of gameplay and all screens.
 
-# Android Emulator
-flutter run -d android
-
-# Web Browser
-flutter run -d web
-
-# macOS Desktop
-flutter run -d macos
-
-# Linux Desktop
-flutter run -l
-
-# Windows Desktop
-flutter run -d windows
-```
-
-**With verbose logging:**
-```bash
-flutter run -v
-```
-
-## Testing
-
-### Run Automated Tests
+## Running Tests
 
 ```bash
 flutter test
 ```
 
-**Note:** The current test file contains placeholder tests. For proper testing of game functionality, additional widget and integration tests should be written.
-
-### Manual Testing Checklist
-
-- [ ] **Home Screen**: Launch app and verify story dialog appears
-- [ ] **Game Start**: Tap "Start" button and verify Level 1 begins
-- [ ] **Timer**: Verify 60-second countdown timer starts and updates
-- [ ] **Wrong Selection**: Click incorrect objects and verify 10 seconds are deducted
-- [ ] **Hint System**: Make 3 wrong selections and verify hint message appears
-- [ ] **Correct Selection**: Select correct evidence and verify level completion
-- [ ] **Level Progression**: Complete levels 1-3 and verify game completion screen
-- [ ] **Timeout**: Let timer reach zero and verify "Time Up" screen appears
-- [ ] **Navigation**: Verify all screen transitions work correctly
-- [ ] **Back Navigation**: Verify ability to return to home screen
-
-## Game Mechanics
-
-### Timer System
-- Each level starts with 60 seconds
-- Timer counts down every second
-- When timer reaches 0, the level ends with "Time Up" screen
-
-### Penalty System
-- Each wrong object selection deducts 10 seconds
-- Penalty prevents timer from going below 0
-- Tracks total wrong attempts for feedback
-
-### Hint System
-- Triggers automatically after 3 consecutive wrong attempts
-- Provides game-specific guidance
-- Helps players progress without penalties
-
-### Level Progression
-1. **Level 1**: Find key evidence at crime scene
-2. **Level 2**: Find object criminal left behind (wallet)
-3. **Level 3**: Find object criminal left behind (notebook)
-
 ## Technology Stack
 
-- **Framework**: Flutter 3.10.8+
-- **Language**: Dart
-- **State Management**: StatefulWidget (built-in)
-- **UI Design**: Material Design
-- **Styling**: Custom gradients and Material components
-
-## Future Enhancements
-
-- [ ] Implement database for level data and high scores
-- [ ] Add sound effects and background music
-- [ ] Implement difficulty levels (Easy, Medium, Hard)
-- [ ] Add multiplayer support
-- [ ] Add leaderboard system
-- [ ] Implement persistent score storage
-- [ ] Add more levels beyond 3
-- [ ] Add different game themes/cases
+| Layer | Choice |
+|---|---|
+| Framework | Flutter 3.10.8+ |
+| Language | Dart |
+| State management | `StatefulWidget` |
+| Persistence | `shared_preferences` |
+| UI | Material Design with custom dark theme |
 
 ## License
 
-This project is private and not yet published.
+This project is private and not published to pub.dev.

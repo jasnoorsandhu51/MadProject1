@@ -118,7 +118,10 @@ class _LevelScreenState extends State<LevelScreen> {
         } else {
           dialogues = DialogueScript.closingScene;
           bgImage = 'scene0';
-          nextScreen = const GameCompleteScreen();
+          nextScreen = GameCompleteScreen(
+            timeRemaining: timeLeft,
+            wrongClicks: wrongClicks,
+          );
         }
 
         Navigator.pushReplacement(

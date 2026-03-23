@@ -223,7 +223,10 @@ class LevelCompleteScreen extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const GameCompleteScreen(),
+                            builder: (_) => GameCompleteScreen(
+                              timeRemaining: timeRemaining,
+                              wrongClicks: wrongClicks,
+                            ),
                           ),
                         );
                       }
