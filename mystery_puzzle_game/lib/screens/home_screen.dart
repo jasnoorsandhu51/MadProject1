@@ -4,6 +4,8 @@ import '../models/game_state.dart';
 import '../widgets/clue_progress_bar.dart';
 import 'dialogue_screen.dart';
 import 'level_screen.dart';
+import '../database/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
