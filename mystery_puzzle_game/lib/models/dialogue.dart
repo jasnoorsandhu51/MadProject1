@@ -120,7 +120,7 @@ class DialogueScript {
     ),
     Dialogue(
       text:
-          " I was the maid. She wrote it all down. She found William's wallet two days before the heist and saw her opportunity.",
+          " It was the maid. She wrote it all down. She found William's wallet two days before the heist and saw her opportunity.",
       benImage: "assets/images/ben_think.png",
     ),
     Dialogue(
